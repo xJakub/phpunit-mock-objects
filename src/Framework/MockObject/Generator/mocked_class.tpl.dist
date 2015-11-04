@@ -1,14 +1,22 @@
 {prologue}{class_declaration}
 {
     private $__phpunit_invocationMocker;
+    private static $__phpunit_static_invocationMocker;
     private $__phpunit_originalObject;
     private $__phpunit_configurable = {configurable};
+    private static $__phpunit_static_configurable = {configurable};
 
 {clone}{mocked_methods}
     public function expects(PHPUnit_Framework_MockObject_Matcher_Invocation $matcher)
     {
         return $this->__phpunit_getInvocationMocker()->expects($matcher);
     }
+
+    public static function staticExpects(PHPUnit_Framework_MockObject_Matcher_Invocation $matcher)
+    {
+        return self::__phpunit_getStaticInvocationMocker()->expects($matcher);
+    }
+
 {method}
     public function __phpunit_setOriginalObject($originalObject)
     {
@@ -24,9 +32,19 @@
         return $this->__phpunit_invocationMocker;
     }
 
+    public static function __phpunit_getStaticInvocationMocker()
+    {
+        if (self::$__phpunit_static_invocationMocker === NULL) {
+            self::$__phpunit_static_invocationMocker = new PHPUnit_Framework_MockObject_InvocationMocker(self::$__phpunit_static_configurable);
+        }
+
+        return self::$__phpunit_static_invocationMocker;
+    }
+
     public function __phpunit_hasMatchers()
     {
-        return $this->__phpunit_getInvocationMocker()->hasMatchers();
+        return self::__phpunit_getStaticInvocationMocker()->hasMatchers() ||
+		    $this->__phpunit_getInvocationMocker()->hasMatchers();
     }
 
     public function __phpunit_verify($unsetInvocationMocker = true)
@@ -36,5 +54,11 @@
         if ($unsetInvocationMocker) {
             $this->__phpunit_invocationMocker = null;
         }
+    }
+
+    public function __phpunit_cleanup()
+    {
+        self::$__phpunit_static_invocationMocker = NULL;
+        $this->__phpunit_invocationMocker = NULL;
     }
 }{epilogue}
